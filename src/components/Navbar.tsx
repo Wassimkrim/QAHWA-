@@ -4,7 +4,7 @@ import { COPY, Lang, VENUE_CONFIG } from '../config/content';
 import { useQahwa } from '../context/QahwaContext';
 
 export const Navbar: React.FC = () => {
-  const { lang, switchLanguage, activeAudio, toggleAmbientSound, isRtl } = useQahwa();
+  const { lang, switchLanguage, isRtl } = useQahwa();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -117,34 +117,6 @@ export const Navbar: React.FC = () => {
               </button>
             ))}
           </div>
-
-          {/* Ambient Sound Toggle with Animated Wave Bars */}
-          <button
-            type="button"
-            onClick={toggleAmbientSound}
-            aria-label={activeAudio === 'ambient' ? COPY.nav.soundOn[lang] : COPY.nav.soundOff[lang]}
-            title={activeAudio === 'ambient' ? COPY.nav.soundOn[lang] : COPY.nav.soundOff[lang]}
-            className={`w-9 h-9 rounded-full inline-flex items-center justify-center border transition-colors cursor-pointer shrink-0 focus-visible:outline-2 focus-visible:outline-[#FFE600] ${
-              scrolled
-                ? 'border-[#2A140B]/15 hover:border-[#C1501F]'
-                : 'border-[#F7EEDD]/25 hover:border-[#FFE600]'
-            }`}
-          >
-            <span className="inline-flex items-end gap-[2.5px] h-3.5" aria-hidden="true">
-              {[0.55, 1, 0.7, 0.9].map((h, i) => (
-                <span
-                  key={i}
-                  className={`w-[2px] rounded-full transition-all duration-300 ${
-                    scrolled ? 'bg-[#2A140B]' : 'bg-[#F7EEDD]'
-                  } ${activeAudio === 'ambient' ? 'animate-pulse' : ''}`}
-                  style={{
-                    height: activeAudio === 'ambient' ? `${Math.round(h * 14)}px` : '4px',
-                    animationDelay: `${i * 120}ms`,
-                  }}
-                />
-              ))}
-            </span>
-          </button>
 
           {/* Mobile Drawer Trigger */}
           <button

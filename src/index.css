@@ -70,22 +70,19 @@ html[lang="ar"] .wordmark-tracking {
   letter-spacing: 0;
 }
 
-/* Signature Terracotta Suede procedural surface (reference: Photo B backdrop) */
+/* Signature Terracotta Suede procedural surface (lightweight CSS gradients on mobile, full texture on desktop) */
 .terracotta-suede {
   background-color: #C1501F;
   background-image:
     radial-gradient(ellipse 80% 70% at 15% 10%, rgba(244, 152, 86, 0.28), transparent 65%),
     radial-gradient(ellipse 75% 75% at 88% 92%, rgba(86, 26, 7, 0.36), transparent 68%),
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='suede'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='1 0 0 0 0  0 0.55 0 0 0  0 0.25 0 0 0  0 0 0 0.085 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23suede)'/%3E%3C/svg%3E"),
     linear-gradient(142deg, #C65421 0%, #B74819 54%, #A83F14 100%);
 }
 
 /* Cream plaster surface */
 .cream-plaster {
   background-color: #F7EEDD;
-  background-image:
-    radial-gradient(ellipse 90% 60% at 20% 0%, rgba(255, 250, 240, 0.55), transparent 65%),
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='plaster'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23plaster)' opacity='0.032'/%3E%3C/svg%3E");
+  background-image: radial-gradient(ellipse 90% 60% at 20% 0%, rgba(255, 250, 240, 0.55), transparent 65%);
 }
 
 /* Kraft paper surface */
@@ -93,13 +90,43 @@ html[lang="ar"] .wordmark-tracking {
   background-color: #C79F74;
   background-image:
     radial-gradient(circle at 20% 20%, rgba(247, 238, 221, 0.16), transparent 60%),
-    radial-gradient(circle at 80% 80%, rgba(42, 20, 11, 0.08), transparent 55%),
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='k'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23k)' opacity='0.075'/%3E%3C/svg%3E");
+    radial-gradient(circle at 80% 80%, rgba(42, 20, 11, 0.08), transparent 55%);
 }
 
-/* Paper grain texture overlay (2-4%) */
+/* Subtle paper grain overlay (desktop only to avoid mobile SVG turbulence rasterization lag) */
 .paper-grain {
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.032'/%3E%3C/svg%3E");
+  background-image: none;
+}
+
+@media (min-width: 768px) {
+  .terracotta-suede {
+    background-image:
+      radial-gradient(ellipse 80% 70% at 15% 10%, rgba(244, 152, 86, 0.28), transparent 65%),
+      radial-gradient(ellipse 75% 75% at 88% 92%, rgba(86, 26, 7, 0.36), transparent 68%),
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='suede'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='1 0 0 0 0  0 0.55 0 0 0  0 0.25 0 0 0  0 0 0 0.085 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23suede)'/%3E%3C/svg%3E"),
+      linear-gradient(142deg, #C65421 0%, #B74819 54%, #A83F14 100%);
+  }
+
+  .cream-plaster {
+    background-image:
+      radial-gradient(ellipse 90% 60% at 20% 0%, rgba(255, 250, 240, 0.55), transparent 65%),
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='plaster'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23plaster)' opacity='0.032'/%3E%3C/svg%3E");
+  }
+
+  .kraft-card-bg {
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(247, 238, 221, 0.16), transparent 60%),
+      radial-gradient(circle at 80% 80%, rgba(42, 20, 11, 0.08), transparent 55%),
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='k'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23k)' opacity='0.075'/%3E%3C/svg%3E");
+  }
+
+  .paper-grain {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.032'/%3E%3C/svg%3E");
+  }
+
+  .ink-stamp-edge {
+    filter: url(#qahwa-ink-stamp);
+  }
 }
 
 /* Hand-thrown variable type */

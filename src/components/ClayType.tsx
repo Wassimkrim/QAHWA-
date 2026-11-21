@@ -37,90 +37,103 @@ export const PressedClayHeadline: React.FC<{
     if (!el) return;
 
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReduced) {
+    const isTouchOrSmall =
+      window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches;
+
+    if (prefersReduced || isTouchOrSmall) {
       unitRefs.current.forEach((span) => {
         if (!span) return;
-        span.style.fontVariationSettings = isRtl ? '"wght" 700' : '"opsz" 144, "wght" 580, "SOFT" 80, "WONK" 1';
+        span.style.fontVariationSettings = isRtl
+          ? '"wght" 700'
+          : '"opsz" 144, "wght" 560, "SOFT" 80, "WONK" 1';
       });
       return;
     }
-
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        inViewRef.current = entry.isIntersecting;
-      },
-      { threshold: 0.05 }
-    );
-    obs.observe(el);
 
     const units = unitRefs.current.filter(Boolean) as HTMLSpanElement[];
     const currentWght = units.map(() => 480);
     const currentSoft = units.map(() => 35);
     let rafId = 0;
 
-    const onPointerMove = (e: PointerEvent) => {
-      if (!inViewRef.current) return;
-      pointerRef.current = { x: e.clientX, y: e.clientY, active: true };
+    const startRaf = () => {
+      if (!rafId) rafId = requestAnimationFrame(tick);
+    };
+    const stopRaf = () => {
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+        rafId = 0;
+      }
     };
 
-    const onTouchMove = (e: TouchEvent) => {
-      if (!inViewRef.current || e.touches.length === 0) return;
-      pointerRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, active: true };
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        inViewRef.current = entry.isIntersecting;
+        if (entry.isIntersecting) {
+          startRaf();
+        } else {
+          stopRaf();
+        }
+      },
+      { threshold: 0.05 }
+    );
+    obs.observe(el);
+
+    const onPointerMove = (e: PointerEvent) => {
+      if (!inViewRef.current || e.pointerType === 'touch') return;
+      pointerRef.current = { x: e.clientX, y: e.clientY, active: true };
     };
 
     const onLeave = () => {
       pointerRef.current.active = false;
     };
 
-    const tick = (now: number) => {
-      if (inViewRef.current) {
-        const radius = 160;
-        const p = pointerRef.current;
+    function tick(now: number) {
+      rafId = 0;
+      if (!inViewRef.current) return;
 
-        units.forEach((span, idx) => {
-          let targetWght = 480;
-          let targetSoft = 35;
+      const radius = 160;
+      const p = pointerRef.current;
 
-          if (p.active) {
-            const rect = span.getBoundingClientRect();
-            const cx = rect.left + rect.width / 2;
-            const cy = rect.top + rect.height / 2;
-            const dist = Math.hypot(p.x - cx, p.y - cy);
-            const influence = Math.max(0, 1 - dist / radius);
-            const eased = influence * influence * (3 - 2 * influence);
-            targetWght = 420 + eased * 430;
-            targetSoft = 20 + eased * 80;
-          } else {
-            // Subtle idle clay breathing wave
-            const wave = (Math.sin(now * 0.0018 + idx * 0.38) + 1) * 0.5;
-            targetWght = 430 + wave * 120;
-            targetSoft = 30 + wave * 35;
-          }
+      units.forEach((span, idx) => {
+        let targetWght = 480;
+        let targetSoft = 35;
 
-          currentWght[idx] += (targetWght - currentWght[idx]) * 0.16;
-          currentSoft[idx] += (targetSoft - currentSoft[idx]) * 0.16;
+        if (p.active) {
+          const rect = span.getBoundingClientRect();
+          const cx = rect.left + rect.width / 2;
+          const cy = rect.top + rect.height / 2;
+          const dist = Math.hypot(p.x - cx, p.y - cy);
+          const influence = Math.max(0, 1 - dist / radius);
+          const eased = influence * influence * (3 - 2 * influence);
+          targetWght = 420 + eased * 430;
+          targetSoft = 20 + eased * 80;
+        } else {
+          const wave = (Math.sin(now * 0.0018 + idx * 0.38) + 1) * 0.5;
+          targetWght = 430 + wave * 120;
+          targetSoft = 30 + wave * 35;
+        }
 
-          span.style.fontVariationSettings = isRtl
-            ? `"wght" ${Math.round(currentWght[idx])}`
-            : `"opsz" 144, "wght" ${Math.round(currentWght[idx])}, "SOFT" ${Math.round(
-                currentSoft[idx]
-              )}, "WONK" 1`;
-        });
-      }
+        currentWght[idx] += (targetWght - currentWght[idx]) * 0.16;
+        currentSoft[idx] += (targetSoft - currentSoft[idx]) * 0.16;
+
+        span.style.fontVariationSettings = isRtl
+          ? `"wght" ${Math.round(currentWght[idx])}`
+          : `"opsz" 144, "wght" ${Math.round(currentWght[idx])}, "SOFT" ${Math.round(
+              currentSoft[idx]
+            )}, "WONK" 1`;
+      });
+
       rafId = requestAnimationFrame(tick);
-    };
+    }
 
     window.addEventListener('pointermove', onPointerMove, { passive: true });
-    window.addEventListener('touchmove', onTouchMove, { passive: true });
     document.addEventListener('pointerleave', onLeave);
-    rafId = requestAnimationFrame(tick);
 
     return () => {
       obs.disconnect();
       window.removeEventListener('pointermove', onPointerMove);
-      window.removeEventListener('touchmove', onTouchMove);
       document.removeEventListener('pointerleave', onLeave);
-      cancelAnimationFrame(rafId);
+      stopRaf();
     };
   }, [isRtl, text]);
 
@@ -143,7 +156,7 @@ export const PressedClayHeadline: React.FC<{
                 ref={(el) => {
                   unitRefs.current[idx] = el;
                 }}
-                className="inline-block will-change-[font-variation-settings]"
+                className="inline-block"
                 style={{
                   fontVariationSettings: isRtl
                     ? '"wght" 600'
@@ -285,8 +298,7 @@ export const StampCollageWord: React.FC<{
     return (
       <span
         ref={ref}
-        className={`inline-flex flex-wrap items-baseline gap-x-3 ${className}`}
-        style={{ filter: 'url(#qahwa-ink-stamp)' }}
+        className={`inline-flex flex-wrap items-baseline gap-x-3 ink-stamp-edge ${className}`}
       >
         {words.map((w, idx) => {
           const rot = idx % 2 === 0 ? -2 : 2.2;
@@ -325,8 +337,7 @@ export const StampCollageWord: React.FC<{
   return (
     <span
       ref={ref}
-      className={`inline-flex flex-wrap items-baseline ${className}`}
-      style={{ filter: 'url(#qahwa-ink-stamp)' }}
+      className={`inline-flex flex-wrap items-baseline ink-stamp-edge ${className}`}
     >
       {chars.map((ch, idx) => {
         if (ch === ' ') {

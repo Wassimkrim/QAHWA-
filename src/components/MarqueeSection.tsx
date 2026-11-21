@@ -22,9 +22,11 @@ export const MarqueeSection: React.FC = () => {
     let direction = isRtl ? 1 : -1;
     let velocityBoost = 0;
     let raf = 0;
+    let isVisible = false;
 
     const st = ScrollTrigger.create({
       onUpdate: (self) => {
+        if (!isVisible) return;
         const vel = self.getVelocity();
         if (Math.abs(vel) > 30) {
           direction = vel > 0 ? (isRtl ? 1 : -1) : (isRtl ? -1 : 1);
@@ -34,6 +36,8 @@ export const MarqueeSection: React.FC = () => {
     });
 
     const loop = () => {
+      raf = 0;
+      if (!isVisible) return;
       const halfWidth = track.scrollWidth / 2;
       if (halfWidth > 0) {
         velocityBoost *= 0.92;
@@ -41,14 +45,28 @@ export const MarqueeSection: React.FC = () => {
         offset += speed;
         if (offset <= -halfWidth) offset += halfWidth;
         if (offset >= 0) offset -= halfWidth;
-        track.style.transform = `translate3d(${offset}px, 0, 0)`;
+        track.style.transform = `translate3d(${offset.toFixed(1)}px, 0, 0)`;
       }
       raf = requestAnimationFrame(loop);
     };
 
-    raf = requestAnimationFrame(loop);
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        isVisible = entry.isIntersecting;
+        if (isVisible && !raf) {
+          raf = requestAnimationFrame(loop);
+        } else if (!isVisible && raf) {
+          cancelAnimationFrame(raf);
+          raf = 0;
+        }
+      },
+      { threshold: 0.01 }
+    );
+    obs.observe(track);
+
     return () => {
-      cancelAnimationFrame(raf);
+      obs.disconnect();
+      if (raf) cancelAnimationFrame(raf);
       st.kill();
     };
   }, [isRtl]);

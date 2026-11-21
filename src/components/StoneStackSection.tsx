@@ -242,14 +242,20 @@ export const StoneStackSection: React.FC = () => {
       ctx.restore();
     };
 
+    let isCanvasVisible = false;
+    let lastHoldReported = -1;
+
     const tick = (now: number) => {
+      rafId = 0;
+      if (!isCanvasVisible) return;
+
       const dt = Math.min(32, now - lastTick);
       lastTick = now;
 
       if (phaseRef.current === 'playing') {
         Matter.Engine.update(engine, dt);
 
-        if (startTimeRef.current !== null && now - lastTimeUpdate > 80) {
+        if (startTimeRef.current !== null && now - lastTimeUpdate > 120) {
           lastTimeUpdate = now;
           setElapsedSec((now - startTimeRef.current) / 1000);
         }
@@ -279,7 +285,10 @@ export const StoneStackSection: React.FC = () => {
           if (steadyStart === null) steadyStart = now;
           const heldMs = now - steadyStart;
           const pct = Math.min(1, heldMs / 3000);
-          setHoldProgress(pct);
+          if (Math.abs(pct - lastHoldReported) > 0.03) {
+            lastHoldReported = pct;
+            setHoldProgress(pct);
+          }
           if (heldMs >= 3000) {
             const finalTime =
               startTimeRef.current !== null
@@ -290,7 +299,10 @@ export const StoneStackSection: React.FC = () => {
           }
         } else {
           steadyStart = null;
-          setHoldProgress(0);
+          if (lastHoldReported !== 0) {
+            lastHoldReported = 0;
+            setHoldProgress(0);
+          }
         }
       } else {
         kilnAnimRef.current = Math.min(1, kilnAnimRef.current + dt / 2000);
@@ -393,10 +405,24 @@ export const StoneStackSection: React.FC = () => {
       rafId = requestAnimationFrame(tick);
     };
 
-    rafId = requestAnimationFrame(tick);
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        isCanvasVisible = entry.isIntersecting;
+        if (isCanvasVisible && !rafId) {
+          lastTick = performance.now();
+          rafId = requestAnimationFrame(tick);
+        } else if (!isCanvasVisible && rafId) {
+          cancelAnimationFrame(rafId);
+          rafId = 0;
+        }
+      },
+      { rootMargin: '150px' }
+    );
+    obs.observe(container);
 
     return () => {
-      cancelAnimationFrame(rafId);
+      obs.disconnect();
+      if (rafId) cancelAnimationFrame(rafId);
       Matter.World.clear(engine.world, false);
       Matter.Engine.clear(engine);
     };

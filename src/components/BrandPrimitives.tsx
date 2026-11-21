@@ -107,21 +107,30 @@ export const QahwaWordmark: React.FC<{
       ref={containerRef}
       dir="ltr"
       className={`relative inline-flex items-center justify-center font-sans-brand font-semibold uppercase select-none ${sizeClass} ${className}`}
-      style={{ color }}
+      style={{
+        color,
+        ['--qahwa-spread' as string]: spread,
+      }}
       aria-label="QAHWA"
     >
-      <div className="inline-flex items-center" style={{ gap: `${0.32 + spread * 0.9}em` }}>
+      <div
+        className="inline-flex items-center"
+        style={{ gap: `calc(0.32em + var(--qahwa-spread, ${spread}) * 0.9em)` }}
+      >
         {letters.map((char, idx) => {
           const hasBarLeft = idx === 0;
           const hasRing = idx === 2;
           const hasBarRight = idx === 4;
-          const tx = spread * letterSpreadOffsets[idx] * 12;
 
           return (
             <span
               key={idx}
               className="relative inline-block transition-transform duration-150 ease-out"
-              style={{ transform: `translate3d(${tx}px, 0, 0)` }}
+              style={{
+                transform: `translate3d(calc(var(--qahwa-spread, ${spread}) * ${
+                  letterSpreadOffsets[idx] * 12
+                }px), 0, 0)`,
+              }}
             >
               <span className={glaze ? 'glaze-text' : ''}>{char}</span>
 

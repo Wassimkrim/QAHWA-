@@ -8,7 +8,7 @@ import { GlazeHeadline, HandDrawnArrow, SectionLabel, SunRaysSVG } from './Brand
 gsap.registerPlugin(ScrollTrigger);
 
 export const RitualSection: React.FC = () => {
-  const { lang, activeAudio, setActiveAudio } = useQahwa();
+  const { lang } = useQahwa();
   const sectionRef = useRef<HTMLElement>(null);
   const archRef = useRef<HTMLDivElement>(null);
   const mainVideoRef = useRef<HTMLVideoElement>(null);
@@ -17,8 +17,6 @@ export const RitualSection: React.FC = () => {
   const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
   const [linkHovered, setLinkHovered] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
-
-  const isRitualSoundOn = activeAudio === 'ritual';
 
   useEffect(() => {
     const check = () => setIsDesktop(window.innerWidth >= 768);
@@ -41,9 +39,6 @@ export const RitualSection: React.FC = () => {
         } else {
           mainVid?.pause();
           bgVid?.pause();
-          if (isRitualSoundOn) {
-            setActiveAudio('none');
-          }
         }
       },
       { threshold: 0.15 }
@@ -51,21 +46,22 @@ export const RitualSection: React.FC = () => {
 
     obs.observe(section);
     return () => obs.disconnect();
-  }, [isRitualSoundOn, setActiveAudio]);
+  }, []);
 
   useEffect(() => {
     const vid = mainVideoRef.current;
     if (vid) {
-      vid.defaultMuted = !isRitualSoundOn;
-      vid.muted = !isRitualSoundOn;
+      vid.defaultMuted = true;
+      vid.muted = true;
       vid.playsInline = true;
+      vid.setAttribute('muted', '');
       vid.setAttribute('playsinline', '');
       vid.setAttribute('webkit-playsinline', '');
       if (vid.paused) {
         vid.play().catch(() => {});
       }
     }
-  }, [isRitualSoundOn]);
+  }, []);
 
   useEffect(() => {
     const arch = archRef.current;
@@ -101,10 +97,6 @@ export const RitualSection: React.FC = () => {
     const nx = (e.clientX - rect.left) / rect.width - 0.5;
     const ny = (e.clientY - rect.top) / rect.height - 0.5;
     setTilt({ rx: -ny * 7, ry: nx * 9 });
-  };
-
-  const toggleSound = () => {
-    setActiveAudio(isRitualSoundOn ? 'none' : 'ritual');
   };
 
   return (
@@ -189,28 +181,6 @@ export const RitualSection: React.FC = () => {
               playsInline
               className="w-full h-full object-cover scale-[1.07] warm-video-grade"
             />
-
-            <button
-              type="button"
-              onClick={toggleSound}
-              aria-label={isRitualSoundOn ? COPY.nav.soundOn[lang] : COPY.nav.soundOff[lang]}
-              className="absolute bottom-4 right-4 z-30 w-10 h-10 rounded-full bg-[#2A140B]/75 backdrop-blur-sm border border-[#F7EEDD]/40 hover:border-[#FFE600] flex items-center justify-center cursor-pointer transition-colors"
-            >
-              <span className="inline-flex items-end gap-[2.5px] h-3.5" aria-hidden="true">
-                {[0.5, 1, 0.7, 0.85].map((h, i) => (
-                  <span
-                    key={i}
-                    className={`w-[2px] rounded-full bg-[#F7EEDD] transition-all duration-300 ${
-                      isRitualSoundOn ? 'animate-pulse' : ''
-                    }`}
-                    style={{
-                      height: isRitualSoundOn ? `${Math.round(h * 13)}px` : '4px',
-                      animationDelay: `${i * 100}ms`,
-                    }}
-                  />
-                ))}
-              </span>
-            </button>
           </div>
 
           <div className="hidden md:flex flex-col items-start ps-10 text-xs uppercase tracking-[0.28em] text-[#F7EEDD]/90 z-20 self-end pb-12">

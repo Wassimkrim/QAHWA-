@@ -89,6 +89,7 @@ export const BlendBagSection: React.FC = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const pinRef = useRef<HTMLDivElement>(null);
   const sunWrapRef = useRef<HTMLDivElement>(null);
+  const mobileBagImgRef = useRef<HTMLImageElement>(null);
 
   const [inView, setInView] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
@@ -172,17 +173,21 @@ export const BlendBagSection: React.FC = () => {
             }
           },
         });
-      } else {
-        ScrollTrigger.create({
-          trigger: pinEl,
-          start: 'top 75%',
-          end: 'top 10%',
-          scrub: 0.6,
-          onUpdate: (self) => {
-            setProgress(self.progress);
-            if (self.progress >= 0.5) setSunDrawn(true);
-          },
-        });
+      } else if (mobileBagImgRef.current) {
+        gsap.fromTo(
+          mobileBagImgRef.current,
+          { scale: 1.0 },
+          {
+            scale: 1.32,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: pinEl,
+              start: 'top 78%',
+              end: 'top 12%',
+              scrub: 0.5,
+            },
+          }
+        );
       }
     }, pinEl);
 
@@ -469,15 +474,15 @@ export const BlendBagSection: React.FC = () => {
             {/* Compact Mobile Arched Photo B */}
             <div className="relative w-full max-w-[300px] aspect-[4/5] arch-mask overflow-hidden border-[3px] border-[#F7EEDD]/70 shadow-2xl bg-[#2A140B]">
               <img
+                ref={mobileBagImgRef}
                 src={VENUE_CONFIG.assets.photoBBlendBags}
                 alt="QAHWA Blend #2 bag stack"
                 loading="lazy"
                 referrerPolicy="no-referrer"
-                className="w-full h-full object-cover object-top"
+                className="w-full h-full object-cover object-top will-change-transform"
                 style={{
                   clipPath: 'inset(0 0 2.5% 0)',
                   transformOrigin: `${BLEND_PUSH_IN_ORIGIN.xPercent}% ${BLEND_PUSH_IN_ORIGIN.yPercent}%`,
-                  transform: `scale(${bagScale.toFixed(3)})`,
                 }}
               />
               {debugOrigin && (

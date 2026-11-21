@@ -1,26 +1,39 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useQahwa } from '../context/QahwaContext';
 
 export const ScrollProgressRail: React.FC = () => {
   const { isRtl } = useQahwa();
-  const [progress, setProgress] = useState(0);
+  const activePathRef = useRef<SVGPathElement>(null);
+  const pctLabelRef = useRef<HTMLSpanElement>(null);
+  const totalLength = 220;
 
   useEffect(() => {
-    const onScroll = () => {
+    const pathEl = activePathRef.current;
+    const textEl = pctLabelRef.current;
+    if (!pathEl || !textEl) return;
+
+    let scheduled = false;
+
+    const update = () => {
+      scheduled = false;
+      if (window.innerWidth < 1024) return;
       const total = document.documentElement.scrollHeight - window.innerHeight;
-      if (total <= 0) {
-        setProgress(0);
-        return;
-      }
-      setProgress(Math.min(1, Math.max(0, window.scrollY / total)));
+      const p = total <= 0 ? 0 : Math.min(1, Math.max(0, window.scrollY / total));
+      pathEl.style.strokeDashoffset = `${(totalLength * (1 - p)).toFixed(1)}`;
+      textEl.textContent = `${Math.round(p * 100)}%`;
     };
-    onScroll();
+
+    const onScroll = () => {
+      if (!scheduled) {
+        scheduled = true;
+        requestAnimationFrame(update);
+      }
+    };
+
+    update();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
-
-  const totalLength = 220;
-  const dashOffset = totalLength * (1 - progress);
 
   return (
     <div
@@ -30,7 +43,6 @@ export const ScrollProgressRail: React.FC = () => {
       aria-hidden="true"
     >
       <svg viewBox="0 0 24 220" className="w-5 h-44 overflow-visible">
-        {/* Background faint wavy path */}
         <path
           d="M12 4 C18 28, 6 52, 12 76 C18 100, 6 124, 12 148 C18 172, 6 196, 12 216"
           fill="none"
@@ -38,19 +50,19 @@ export const ScrollProgressRail: React.FC = () => {
           strokeWidth="2"
           strokeLinecap="round"
         />
-        {/* Active wavy sun-ray progress */}
         <path
+          ref={activePathRef}
           d="M12 4 C18 28, 6 52, 12 76 C18 100, 6 124, 12 148 C18 172, 6 196, 12 216"
           fill="none"
           stroke="#C1501F"
           strokeWidth="2.4"
           strokeLinecap="round"
           strokeDasharray={totalLength}
-          strokeDashoffset={dashOffset}
+          strokeDashoffset={totalLength}
         />
       </svg>
-      <span className="text-[10px] font-medium tnums text-[#C1501F]/70">
-        {Math.round(progress * 100)}%
+      <span ref={pctLabelRef} className="text-[10px] font-medium tnums text-[#C1501F]/70">
+        0%
       </span>
     </div>
   );
