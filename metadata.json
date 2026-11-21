@@ -1,0 +1,8 @@
+{
+  "name": "QAHWA — Specialty Coffee, Matcha & Ceramics",
+  "description": "More than coffee. Specialty coffee, ceremonial matcha, hojicha, and handmade ceramics in Algiers.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
